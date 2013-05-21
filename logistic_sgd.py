@@ -166,22 +166,8 @@ def load_data(dataset):
     print '... loading data'
 
     # Load the dataset
-    #f = gzip.open(dataset, 'rb')
-    #train_set, valid_set, test_set = cPickle.load(f)
-    f = file(dataset, 'r')
-    lines = f.readlines()
-    #half = len(lines)/2
-    for l in lines:
-        l = l.split(',')
-        l = numpy.array([int(i) for i in l])
-    train_set = numpy.array(lines)
-    train_set = (train_set, train_set)
-    test_set = train_set
-    valid_set = train_set
-    #for l in lines[half:]:
-        #targets.append(l[0])
-    #targets = numpy.array(targets)
-
+    f = gzip.open(dataset, 'rb')
+    train_set, valid_set, test_set = cPickle.load(f)
     f.close()
     #train_set, valid_set, test_set format: tuple(input, target)
     #input is an numpy.ndarray of 2 dimensions (a matrix)

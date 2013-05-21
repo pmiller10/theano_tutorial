@@ -192,7 +192,7 @@ class SdA(object):
         corruption_level = T.scalar('corruption')  # % of corruption to use
         learning_rate = T.scalar('lr')  # learning rate to use
         # number of batches
-        n_batches = 2#train_set_x.get_value(borrow=True).shape[0] / batch_size
+        n_batches = train_set_x.get_value(borrow=True).shape[0] / batch_size
         # begining of a batch, given `index`
         batch_begin = index * batch_size
         # ending of a batch given `index`
@@ -209,7 +209,7 @@ class SdA(object):
                               theano.Param(learning_rate, default=0.1)],
                                  outputs=cost,
                                  updates=updates,
-                                 givens={self.x: train_set_x[batch_begin:batch_end]})
+                                 givens={self.x: train_set_x[batch_begin:batch_end]}, on_unused_input='warn')
                                                              
             # append `fn` to the list of functions
             pretrain_fns.append(fn)
@@ -316,17 +316,10 @@ def test_SdA(finetune_lr=0.1, pretraining_epochs=15,
 
     """
 
-    #####datasets = load_data(dataset)
-    a = numpy.array([1., 2., 3., 4.])
-    x = ([a,a,a,a,], [a,a,a,a])
-    datasets = [x,x,x]
-
-    train_set_x, train_set_y = datasets[0]
-    valid_set_x, valid_set_y = datasets[1]
-    test_set_x, test_set_y = datasets[2]
+    datasets = load_data(dataset)
 
     # compute number of minibatches for training, validation and testing
-    n_train_batches = 2#train_set_x.get_value(borrow=True).shape[0]
+    n_train_batches = train_set_x.get_value(borrow=True).shape[0]
     n_train_batches /= batch_size
 
     # numpy random generator
@@ -341,8 +334,7 @@ def test_SdA(finetune_lr=0.1, pretraining_epochs=15,
     # PRETRAINING THE MODEL #
     #########################
     print '... getting the pretraining functions'
-    pretraining_fns = sda.pretraining_functions(train_set_x=train_set_x,
-                                                batch_size=batch_size)
+    pretraining_fns = sda.pretraining_functions(train_set_x=train_set_x, batch_size=batch_size)
 
     print '... pre-training the model'
     start_time = time.clock()
@@ -354,9 +346,7 @@ def test_SdA(finetune_lr=0.1, pretraining_epochs=15,
             # go through the training set
             c = []
             for batch_index in xrange(n_train_batches):
-                c.append(pretraining_fns[i](index=batch_index,
-                         corruption=corruption_levels[i],
-                         lr=pretrain_lr))
+                c.append(pretraining_fns[i](index=batch_index, corruption=corruption_levels[i], lr=pretrain_lr))
             print 'Pre-training layer %i, epoch %d, cost ' % (i, epoch),
             print numpy.mean(c)
 
